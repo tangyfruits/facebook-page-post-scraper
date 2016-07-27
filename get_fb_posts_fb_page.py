@@ -8,7 +8,7 @@ app_id = "<FILL IN>"
 app_secret = "<FILL IN>" # DO NOT SHARE WITH ANYONE!
 page_id = "me"
 
-access_token = ""
+access_token = "EAACEdEose0cBACnz2kSzCjCtLYoItWSVWMpFw188GZAz18gRYkH3gcLqfXZBtYiI94hbGYx3G39D8Mo1jDjxuC169cSvqBkSyFOtKJj9ZBZCwVUNg8VrcfSBqDtwkj4IZBI4LDwCeRZBovf5iUsws1QCE4keW4a36CXQKJnDlZAdAZDZD"
 
 def request_until_succeed(url):
     req = urllib2.Request(url)
@@ -79,7 +79,7 @@ def processFacebookPageFeedStatus(status, access_token):
 
     # Additionally, some items may not always exist,
     # so must check for existence first
-    gangs = status['from']
+    from_name = status['from']['name']
     status_id = status['id']
     status_message = '' if 'message' not in status.keys() else \
             unicode_normalize(status['message'])
@@ -137,14 +137,14 @@ def processFacebookPageFeedStatus(status, access_token):
 
     # Return a tuple of all processed data
 
-    return (gangs, status_id, status_message, link_name, status_type, status_link,
+    return (from_name, status_id, status_message, link_name, status_type, status_link,
             status_published, num_reactions, num_comments, num_shares,
             num_likes, num_loves, num_wows, num_hahas, num_sads, num_angrys)
 
 def scrapeFacebookPageFeedStatus(page_id, access_token):
     with open('%s_facebook_statuses.csv' % page_id, 'wb') as file:
         w = csv.writer(file)
-        w.writerow(["from","status_id", "status_message", "link_name", "status_type",
+        w.writerow(["from_name","status_id", "status_message", "link_name", "status_type",
                     "status_link", "status_published", "num_reactions", 
                     "num_comments", "num_shares", "num_likes", "num_loves", 
                     "num_wows", "num_hahas", "num_sads", "num_angrys"])
