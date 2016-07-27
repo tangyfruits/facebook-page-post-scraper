@@ -8,7 +8,7 @@ app_id = "<FILL IN>"
 app_secret = "<FILL IN>" # DO NOT SHARE WITH ANYONE!
 page_id = "me"
 
-access_token = "EAACEdEose0cBACnz2kSzCjCtLYoItWSVWMpFw188GZAz18gRYkH3gcLqfXZBtYiI94hbGYx3G39D8Mo1jDjxuC169cSvqBkSyFOtKJj9ZBZCwVUNg8VrcfSBqDtwkj4IZBI4LDwCeRZBovf5iUsws1QCE4keW4a36CXQKJnDlZAdAZDZD"
+access_token = ""
 
 def request_until_succeed(url):
     req = urllib2.Request(url)
@@ -142,6 +142,8 @@ def processFacebookPageFeedStatus(status, access_token):
             num_likes, num_loves, num_wows, num_hahas, num_sads, num_angrys)
 
 def scrapeFacebookPageFeedStatus(page_id, access_token):
+    name = json.loads(request_until_succeed("https://graph.facebook.com/v2.6/me/?fields=name&access_token="))
+    print name['name']
     with open('%s_facebook_statuses.csv' % page_id, 'wb') as file:
         w = csv.writer(file)
         w.writerow(["from_name","status_id", "status_message", "link_name", "status_type",
