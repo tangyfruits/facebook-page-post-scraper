@@ -6,9 +6,9 @@ import time
 
 app_id = "<FILL IN>"
 app_secret = "<FILL IN>" # DO NOT SHARE WITH ANYONE!
-page_id = "cnn"
+page_id = "me"
 
-access_token = app_id + "|" + app_secret
+access_token = ""
 
 def request_until_succeed(url):
     req = urllib2.Request(url)
@@ -37,8 +37,8 @@ def getFacebookPageFeedData(page_id, access_token, num_statuses):
     # Construct the URL string; see http://stackoverflow.com/a/37239851 for
     # Reactions parameters
     base = "https://graph.facebook.com/v2.6"
-    node = "/%s/posts" % page_id 
-    fields = "/?fields=message,link,created_time,type,name,id," + \
+    node = "/%s/feed" % page_id 
+    fields = "/?fields=from,message,link,created_time,type,name,id," + \
             "comments.limit(0).summary(true),shares,reactions" + \
             ".limit(0).summary(true)"
     parameters = "&limit=%s&access_token=%s" % (num_statuses, access_token)
@@ -79,7 +79,7 @@ def processFacebookPageFeedStatus(status, access_token):
 
     # Additionally, some items may not always exist,
     # so must check for existence first
-
+    gangs = status['from']
     status_id = status['id']
     status_message = '' if 'message' not in status.keys() else \
             unicode_normalize(status['message'])
@@ -137,14 +137,14 @@ def processFacebookPageFeedStatus(status, access_token):
 
     # Return a tuple of all processed data
 
-    return (status_id, status_message, link_name, status_type, status_link,
+    return (gangs, status_id, status_message, link_name, status_type, status_link,
             status_published, num_reactions, num_comments, num_shares,
             num_likes, num_loves, num_wows, num_hahas, num_sads, num_angrys)
 
 def scrapeFacebookPageFeedStatus(page_id, access_token):
     with open('%s_facebook_statuses.csv' % page_id, 'wb') as file:
         w = csv.writer(file)
-        w.writerow(["status_id", "status_message", "link_name", "status_type",
+        w.writerow(["from","status_id", "status_message", "link_name", "status_type",
                     "status_link", "status_published", "num_reactions", 
                     "num_comments", "num_shares", "num_likes", "num_loves", 
                     "num_wows", "num_hahas", "num_sads", "num_angrys"])
