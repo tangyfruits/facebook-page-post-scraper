@@ -4,24 +4,22 @@ import datetime
 import csv
 import time
 
-app_id = "<FILL IN>"
-app_secret = "<FILL IN>" # DO NOT SHARE WITH ANYONE!
 page_id = "me"
-
 access_token = ""
 
 def request_until_succeed(url):
+    counter = 0
     req = urllib2.Request(url)
     success = False
-    while success is False:
-        try: 
+    while success is False and counter < 5:
+        try:
             response = urllib2.urlopen(req)
             if response.getcode() == 200:
                 success = True
         except Exception, e:
             print e
             time.sleep(5)
-
+            counter = counter + 1
             print "Error for URL %s: %s" % (url, datetime.datetime.now())
             print "Retrying."
 
@@ -36,8 +34,8 @@ def getFacebookPageFeedData(page_id, access_token, num_statuses):
 
     # Construct the URL string; see http://stackoverflow.com/a/37239851 for
     # Reactions parameters
-    base = "https://graph.facebook.com/v2.6"
-    node = "/%s/feed" % page_id 
+    base = "https://graph.facebook.com/v2.7"
+    node = "/%s/feed" % page_id
     fields = "/?fields=from,message,link,created_time,type,name,id," + \
             "comments.limit(0).summary(true),shares,reactions" + \
             ".limit(0).summary(true)"
@@ -54,7 +52,7 @@ def getReactionsForStatus(status_id, access_token):
     # See http://stackoverflow.com/a/37239851 for Reactions parameters
         # Reactions are only accessable at a single-post endpoint
 
-    base = "https://graph.facebook.com/v2.6"
+    base = "https://graph.facebook.com/v2.7"
     node = "/%s" % status_id
     reactions = "/?fields=" \
             "reactions.type(LIKE).limit(0).summary(total_count).as(like)" \
@@ -142,20 +140,22 @@ def processFacebookPageFeedStatus(status, access_token):
             num_likes, num_loves, num_wows, num_hahas, num_sads, num_angrys)
 
 def scrapeFacebookPageFeedStatus(page_id, access_token):
-    name = json.loads(request_until_succeed("https://graph.facebook.com/v2.6/me/?fields=name&access_token="))
-    print name['name']
-    with open('%s_facebook_statuses.csv' % page_id, 'wb') as file:
+    name = json.loads(request_until_succeed("https://graph.facebook.com/v2.7/me/?fields=name&access_token=%s" % access_token))
+    name = name['name'].lower().replace(" ", "_")
+
+    print name
+    with open('%s_facebook_statuses.csv' % name, 'wb') as file:
         w = csv.writer(file)
         w.writerow(["from_name","status_id", "status_message", "link_name", "status_type",
-                    "status_link", "status_published", "num_reactions", 
-                    "num_comments", "num_shares", "num_likes", "num_loves", 
+                    "status_link", "status_published", "num_reactions",
+                    "num_comments", "num_shares", "num_likes", "num_loves",
                     "num_wows", "num_hahas", "num_sads", "num_angrys"])
 
         has_next_page = True
         num_processed = 0   # keep a count on how many we've processed
         scrape_starttime = datetime.datetime.now()
 
-        print "Scraping %s Facebook Page: %s\n" % (page_id, scrape_starttime)
+        print "Scraping %s Facebook Page: %s\n" % (name, scrape_starttime)
 
         statuses = getFacebookPageFeedData(page_id, access_token, 100)
 
@@ -170,7 +170,7 @@ def scrapeFacebookPageFeedStatus(page_id, access_token):
                 # output progress occasionally to make sure code is not
                 # stalling
                 num_processed += 1
-                if num_processed % 100 == 0:
+                if num_processed % 50 == 0:
                     print "%s Statuses Processed: %s" % \
                         (num_processed, datetime.datetime.now())
 
